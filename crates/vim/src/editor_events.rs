@@ -31,6 +31,7 @@ pub fn init(cx: &mut AppContext) {
 }
 
 fn focused(editor: View<Editor>, cx: &mut WindowContext) {
+    println!("focus editor");
     Vim::update(cx, |vim, cx| {
         if !vim.enabled {
             return;

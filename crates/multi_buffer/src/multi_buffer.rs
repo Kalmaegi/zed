@@ -3259,6 +3259,7 @@ impl MultiBufferSnapshot {
     }
 
     pub fn range_for_syntax_ancestor<T: ToOffset>(&self, range: Range<T>) -> Option<Range<usize>> {
+        println!("will find surround range is {:?}", range);
         let range = range.start.to_offset(self)..range.end.to_offset(self);
 
         self.excerpt_containing(range.clone())

@@ -107,10 +107,12 @@ fn register(workspace: &mut Workspace, cx: &mut ViewContext<Workspace>) {
     });
 
     workspace.register_action(|_: &mut Workspace, _: &Tab, cx| {
+        println!("tab event");
         Vim::active_editor_input_ignored(" ".into(), cx)
     });
 
     workspace.register_action(|_: &mut Workspace, _: &Enter, cx| {
+        println!("ehter event");
         Vim::active_editor_input_ignored("\n".into(), cx)
     });
 
@@ -213,6 +215,7 @@ impl Vim {
                 }
             }
             EditorEvent::InputIgnored { text } => {
+                println!("activate editor event");
                 Vim::active_editor_input_ignored(text.clone(), cx);
                 Vim::record_insertion(text, None, cx)
             }
@@ -474,7 +477,7 @@ impl Vim {
         if text.is_empty() {
             return;
         }
-
+        println!("active text is {:?}", text);
         match Vim::read(cx).active_operator() {
             Some(Operator::FindForward { before }) => {
                 let find = Motion::FindForward {
@@ -534,6 +537,7 @@ impl Vim {
                 .update(cx, |workspace, cx| {
                     let active_editor = workspace.active_item_as::<Editor>(cx);
                     if let Some(active_editor) = active_editor {
+                        println!("active eidtor set enable");
                         self.activate_editor(active_editor, cx);
                         self.switch_mode(Mode::Normal, false, cx);
                     }

@@ -221,6 +221,7 @@ fn in_word(
     ignore_punctuation: bool,
 ) -> Option<Range<DisplayPoint>> {
     // Use motion::right so that we consider the character under the cursor when looking for the start
+
     let scope = map
         .buffer_snapshot
         .language_scope_at(relative_to.to_point(map));
@@ -251,6 +252,52 @@ fn surrounding_html_tag(
     let re = Regex::new(r"<(/)?([^<>\s/]+)(?:[^<>]*?)(/)?>").unwrap();
     let mut open_tag_stack: Vec<HtmlTag> = Vec::new();
     let mut final_stack: Vec<HtmlTag> = Vec::new();
+    let mut count = 0;
+    let mut start: usize = relative_to.to_offset(map, Bias::Left);
+    let mut end: usize = relative_to.to_offset(map, Bias::Right);
+    let mut range = (start..end);
+    // while let Some(tag) = map.buffer_snapshot.range_for_syntax_ancestor(start..end) {
+    //     let tags: String = map.buffer_snapshot.text_for_range(tag.clone()).collect();
+    //     println!("tag is {:?}, start is {:?}, end is {:?}", tags, start, end);
+    //     let clo_tag = tag.clone();
+    //     // let re = Regex::new(r"^<(\w+)>.*</\1>$").unwrap();
+    //     // if re.is_match(tags.as_str()) {
+    //     // return ()
+    //     // }
+    //     start = clo_tag.start;
+    //     end = clo_tag.end;
+    //     println!("after start is {}, end is {}", start, end);
+    //     println!(
+    //         "final is {:?}",
+    //         map.buffer_snapshot.text_for_range(tag).collect::<String>()
+    //     );
+    // }
+    loop {
+        match map.buffer_snapshot.range_for_syntax_ancestor(range.clone()) {
+            Some(new_range) => {
+                if new_range == range {
+                    // We didn't find a larger ancestor, so we're done.
+                    let tags: String = map
+                        .buffer_snapshot
+                        .text_for_range(new_range.clone())
+                        .collect();
+                    println!("final range is {:?}, text is {:?}", range, tags);
+                    break;
+                } else {
+                    // We found a larger ancestor, so update the range and continue the loop.
+                    println!("更新range");
+                    range = new_range;
+                    let tags: String = map.buffer_snapshot.text_for_range(range.clone()).collect();
+                    println!("text is {:?}", tags);
+                }
+            }
+            None => {
+                // We didn't find any ancestor, so we're done.
+                println!("not found");
+                break;
+            }
+        }
+    }
     for cap in re.captures_iter(map.text().as_str()) {
         // If it's a self-closing tag, skip
         if let Some(_) = cap.get(3) {
