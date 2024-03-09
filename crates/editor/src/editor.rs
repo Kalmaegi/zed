@@ -76,6 +76,7 @@ use language::{
     CodeLabel, Completion, CursorShape, Diagnostic, Documentation, IndentKind, IndentSize,
     Language, OffsetRangeExt, Point, Selection, SelectionGoal, TransactionId,
 };
+use std::collections::LinkedList;
 
 use hover_links::{HoverLink, HoveredLinkState, InlayHighlight};
 use lsp::{DiagnosticSeverity, LanguageServerId};
@@ -421,8 +422,10 @@ pub struct Editor {
     pixel_position_of_newest_cursor: Option<gpui::Point<Pixels>>,
     gutter_width: Pixels,
     pub last_snapshot: Option<MultiBufferSnapshot>,
+    pub vim_replace_map: HashMap<Range<usize>, String>,
     style: Option<EditorStyle>,
-    editor_actions: Vec<Box<dyn Fn(&mut ViewContext<Self>)>>,
+    pub editor_actions: Vec<Box<dyn Fn(&mut ViewContext<Self>)>>,
+    pub vim_replace_stack: LinkedList<Vec<(Range<usize>, String)>>,
     show_copilot_suggestions: bool,
     use_autoclose: bool,
     custom_context_menu: Option<
@@ -548,6 +551,7 @@ impl SelectionHistory {
     }
 
     fn push_undo(&mut self, entry: SelectionHistoryEntry) {
+        // println!("push undo!!!");
         if self
             .undo_stack
             .back()
@@ -1544,6 +1548,8 @@ impl Editor {
             remote_id: None,
             hover_state: Default::default(),
             hovered_link_state: Default::default(),
+            vim_replace_map: Default::default(),
+            vim_replace_stack: Default::default(),
             copilot_state: Default::default(),
             inlay_hint_cache: InlayHintCache::new(inlay_hint_settings),
             gutter_hovered: false,

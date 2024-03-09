@@ -315,6 +315,25 @@ enum ImeInput {
     UnmarkText,
 }
 
+//给ImeInput实现debug
+impl std::fmt::Debug for ImeInput {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ImeInput::InsertText(text, range) => {
+                write!(f, "InsertText({:?}, {:?})", text, range)
+            }
+            ImeInput::SetMarkedText(text, selected_range, replacement_range) => {
+                write!(
+                    f,
+                    "SetMarkedText({:?}, {:?}, {:?})",
+                    text, selected_range, replacement_range
+                )
+            }
+            ImeInput::UnmarkText => write!(f, "UnmarkText"),
+        }
+    }
+}
+
 struct MacWindowState {
     handle: AnyWindowHandle,
     executor: ForegroundExecutor,
@@ -1157,20 +1176,25 @@ extern "C" fn handle_key_event(this: &Object, native_event: id, key_equivalent: 
 
     let window_height = lock.content_size().height;
     let event = unsafe { PlatformInput::from_native(native_event, Some(window_height)) };
-
+    // println!("收到键盘点击事件");
     if let Some(PlatformInput::KeyDown(mut event)) = event {
+        // println!("收到键盘点击事件222");
         // For certain keystrokes, macOS will first dispatch a "key equivalent" event.
         // If that event isn't handled, it will then dispatch a "key down" event. GPUI
         // makes no distinction between these two types of events, so we need to ignore
         // the "key down" event if we've already just processed its "key equivalent" version.
         if key_equivalent {
             lock.last_key_equivalent = Some(event.clone());
+            println!("是equivalent");
         } else if lock.last_key_equivalent.take().as_ref() == Some(&event) {
+            println!("returnnnnnnn");
             return NO;
         }
 
         let keydown = event.keystroke.clone();
         let fn_modifier = keydown.modifiers.function;
+        // println!("keydown is {:?}， modifier is {:?}", keydown, fn_modifier);
+
         // Ignore events from held-down keys after some of the initially-pressed keys
         // were released.
         if event.is_held {
@@ -1211,7 +1235,7 @@ extern "C" fn handle_key_event(this: &Object, native_event: id, key_equivalent: 
             with_input_handler(this, |input_handler| input_handler.marked_text_range())
                 .flatten()
                 .is_some();
-
+        // println!("have ime? {:?}, is_compose? {:?}", last_ime, is_composing);
         if let Some(ime) = last_ime {
             if let ImeInput::InsertText(text, _) = &ime {
                 if !is_composing {
@@ -1219,6 +1243,7 @@ extern "C" fn handle_key_event(this: &Object, native_event: id, key_equivalent: 
                     if let Some(callback) = callback.as_mut() {
                         event.keystroke.ime_key = Some(text.clone());
                         handled = callback(PlatformInput::KeyDown(event));
+                        // println!("is handled event {:?}", text);
                     }
                 }
             }

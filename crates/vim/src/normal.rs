@@ -363,6 +363,7 @@ pub(crate) fn normal_replace(text: Arc<str>, cx: &mut WindowContext) {
             editor.transact(cx, |editor, cx| {
                 editor.set_clip_at_line_ends(false, cx);
                 let (map, display_selections) = editor.selections.all_display(cx);
+                println!("before selection is {:?}", display_selections);
                 // Selections are biased right at the start. So we need to store
                 // anchors that are biased left so that we can restore the selections
                 // after the change
@@ -375,6 +376,7 @@ pub(crate) fn normal_replace(text: Arc<str>, cx: &mut WindowContext) {
                         start..start
                     })
                     .collect::<Vec<_>>();
+                println!("after selection is {:?}", stable_anchors);
 
                 let edits = display_selections
                     .into_iter()
@@ -395,9 +397,9 @@ pub(crate) fn normal_replace(text: Arc<str>, cx: &mut WindowContext) {
                     buffer.edit(edits, None, cx);
                 });
                 editor.set_clip_at_line_ends(true, cx);
-                editor.change_selections(None, cx, |s| {
-                    s.select_anchor_ranges(stable_anchors);
-                });
+                // editor.change_selections(None, cx, |s| {
+                //     s.select_anchor_ranges(stable_anchors);
+                // });
             });
         });
         vim.pop_operator(cx)
