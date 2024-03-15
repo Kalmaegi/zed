@@ -102,8 +102,8 @@ pub fn init(cx: &mut AppContext) {
 }
 
 fn register(workspace: &mut Workspace, cx: &mut ViewContext<Workspace>) {
-    workspace.register_action(|_: &mut Workspace, &SwitchMode(mode): &SwitchMode, cx| {
-        Vim::update(cx, |vim, cx| vim.switch_mode(mode, false, cx))
+    workspace.register_action(|_: &mut Workspace, SwitchMode(mode): &SwitchMode, cx| {
+        Vim::update(cx, |vim, cx| vim.switch_mode(mode.clone(), false, cx))
     });
     workspace.register_action(
         |_: &mut Workspace, &PushOperator(operator): &PushOperator, cx| {
@@ -359,12 +359,12 @@ impl Vim {
 
     fn switch_mode(&mut self, mode: Mode, leave_selections: bool, cx: &mut WindowContext) {
         let state = self.state();
-        let last_mode = state.mode;
-        let prior_mode = state.last_mode;
+        let last_mode = state.mode.clone();
+        let prior_mode = state.last_mode.clone();
         let prior_tx = state.current_tx;
         self.update_state(|state| {
-            state.last_mode = last_mode;
-            state.mode = mode;
+            state.last_mode = last_mode.clone();
+            state.mode = mode.clone();
             state.operator_stack.clear();
             state.current_tx.take();
             state.current_anchor.take();

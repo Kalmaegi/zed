@@ -246,8 +246,8 @@ pub fn visual_object(object: Object, cx: &mut WindowContext) {
     Vim::update(cx, |vim, cx| {
         if let Some(Operator::Object { around }) = vim.active_operator() {
             vim.pop_operator(cx);
-            let current_mode = vim.state().mode;
-            let target_mode = object.target_visual_mode(current_mode);
+            let current_mode = vim.state().mode.clone();
+            let target_mode = object.target_visual_mode(current_mode.clone());
             if target_mode != current_mode {
                 vim.switch_mode(target_mode, true, cx);
             }

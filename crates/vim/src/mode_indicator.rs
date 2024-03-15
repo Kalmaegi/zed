@@ -28,7 +28,7 @@ impl ModeIndicator {
         };
 
         if vim.enabled {
-            self.mode = Some(vim.state().mode);
+            self.mode = Some(vim.state().mode.clone());
         } else {
             self.mode = None;
         }

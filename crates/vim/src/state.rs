@@ -8,7 +8,9 @@ use language::{CursorShape, Selection, TransactionId};
 use serde::{Deserialize, Serialize};
 use workspace::searchable::Direction;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
+use crate::motion::Motion;
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Mode {
     Normal,
     Insert,
